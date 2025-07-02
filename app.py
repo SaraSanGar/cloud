@@ -29,7 +29,7 @@ Base.metadata.create_all(bind=engine)
 
 @app.route("/")
 def home():
-    return "✅ Flask conectado a PostgreSQL"
+    return "Flask conectado a PostgreSQL"
 
 @app.route("/api/save", methods=["POST"])
 def save():
@@ -57,3 +57,17 @@ def save():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/logs", methods=["GET"])
+def get_logs():
+    session = SessionLocal()
+    logs = session.query(StressLog).order_by(StressLog.timestamp.desc()).limit(50).all()
+    session.close()
+
+    result = [{
+        "timestamp": log.timestamp.isoformat(),
+        "HR": log.HR,
+        "EDA": log.EDA,
+        "TEMP": log.TEMP
+    } for log in logs]
+
+    return jsonify(result), 200
